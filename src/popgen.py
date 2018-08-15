@@ -100,7 +100,7 @@ def main():
 	#individual.samplepheno().printout()
 	"""
 
-	setsz = 1000
+	setsz = 10
 	outvec = np.zeros((setsz*nphenos,NDIMS),dtype=float)
 	outlbl = np.zeros((setsz*nphenos),dtype=int)
 	phenoset = np.empty(setsz,dtype=object)

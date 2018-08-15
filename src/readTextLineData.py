@@ -34,18 +34,43 @@ print(sess)			## This, however, works just fine, but I still need to figure out 
 sess2 = tf.Session()
 with sess2.as_default(): ## This sets the scope for sess2... the shoortcut way is to use: 'with tf.Session() as sess2:'
 	print(tf.get_default_session())
-	values = tf.data.TextLineDataset("data/values.dat")
-	labels = tf.data.TextLineDataset("data/labels.dat")
+	featuresin = np.loadtxt('data/values.dat',dtype=float)
+	labelsin = np.loadtxt('data/labels.dat',dtype=int)
+	assert featuresin.shape[0] == labelsin.shape[0]
 
-	dataset = tf.data.Dataset.zip((values, labels))
+	#features_placeholder = tf.placeholder(featuresin.dtype, featuresin.shape)
+	#labels_placeholder = tf.placeholder(labelsin.dtype, labelsin.shape)
+	#valuesin = tf.data.TextLineDataset("data/values.dat") ## produces string type only
+	#values = tf.string_split(valuesin)
+
+	#labels = tf.data.TextLineDataset("data/labels.dat") ## this works, but produces only string type
+	#labels = tf.data.TextLineDataset("data/labels.dat").output_type(tf.uint8).map(lambda x: tf.one_hot(x,3)) ## this doesn't work
+	#print(labels)
+	#labels = tf.data.map(labels,lambda z: tf.one_hot(z,3))
+
+	#features = tf.data.Dataset.from_tensor_slices((features_placeholder))
+	#labels = tf.data.Dataset.from_tensor_slices((labels_placeholder)).map(lambda x: tf.one_hot(x,3))
+	features = tf.data.Dataset.from_tensor_slices((featuresin))
+	labels = tf.data.Dataset.from_tensor_slices((labelsin)).map(lambda x: tf.one_hot(x,3))
+	dataset = tf.data.Dataset.zip((features, labels)).shuffle(100)#.repeat()
+	#dataset = tf.data.Dataset.zip((values, labels)).shuffle(10).repeat().batch(5)
+	#dataset = dataset.prefetch(100)
+	#dataset = dataset.shuffle(buffer_size=10)
+	#sess2.run(iterator.initializer, feed_dict={features_placeholder: features, labels_placeholder: labels})
 
 	#iterator = dataset.make_initializable_iterator() ## this fails... needs to be one_shot_iterator() for get_next() it seems
+
+	iterator = dataset.make_initializable_iterator()
 	one_shot_iterator = dataset.make_one_shot_iterator()
-	get_next = one_shot_iterator.get_next() ## this works
-	#get_next = iterator.get_next()  ## this fails... needs to be one_shot_iterator() for get_next() it seems
-	for i in range(2):
-		#print(sess2.run(dataset)) ## this fails
-		print(sess2.run(get_next))
+	get_next = iterator.get_next()  
+	sess2.run(iterator.initializer)
+	#for i in range(30):
+	while True:
+		try:
+			print(sess2.run(get_next))
+		except tf.errors.OutOfRangeError:
+			print("Made it through dataset\t",dataset)
+			break
 
 devices = sess2.list_devices()
 for d in devices:
