@@ -100,8 +100,9 @@ def main():
 	#individual.samplepheno().printout()
 	"""
 
-	setsz = 100
-	outvec = np.zeros((setsz*nphenos,NDIMS+1),dtype=float)
+	setsz = 1000
+	outvec = np.zeros((setsz*nphenos,NDIMS),dtype=float)
+	outlbl = np.zeros((setsz*nphenos),dtype=int)
 	phenoset = np.empty(setsz,dtype=object)
 	for j in range(nphenos):
 		phtype = Phenotype(NDIMS,j)
@@ -109,11 +110,12 @@ def main():
 		for i in range(phenoset.shape[0]):
 			phenoset[i] = Individual(phtype)
 			phenoset[i].samplepheno()
-			outvec[j*setsz+i,:-1] = phenoset[i].getcoords()
-			outvec[j*setsz+i,-1] = phenoset[i].getphID()
+			outvec[j*setsz+i,:] = phenoset[i].getcoords()
+			outlbl[j*setsz+i] = phenoset[i].getphID()
 	
 
-	np.savetxt('./data/testing.dat',outvec,fmt='%.4f');
+	np.savetxt('./data/values.dat',outvec,fmt='%.4f');
+	np.savetxt('./data/labels.dat',outlbl,fmt='%i');
 
 
 
